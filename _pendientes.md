@@ -1,5 +1,23 @@
-# Lista de Tareas del Proyecto
+ # REQUISITOS GENERALES
 
+- UPS para regular cantidad de energia
+- Base hecha a la medida para el proyector que va a la mesa
+- Mesa especial hecha a la medida
+- Dos compus, uno orquesta proyecciones y el otro el software
+- Decoración general
+- Marketing del proyecto:
+   - web
+   - Programa de mano y/o insumos/merch de la experiencia:
+- Sistema de audio:
+   - controles de la mesa
+   - música ambiental (elaborar según tiempo de la exp.)
+       - Pueden ser varios tracks entrelazados.
+- Textos/Carteles/Instrucciones explicativos de la experiencia
+   - Diagrama flujo de la experiencia (tiempo estimado de la experiencia)
+   - Sustento narrativo final
+
+
+# PENDIENTES A NIVEL DE SOFTWARE
 
 ## Adaptación para versión web pública y móvil
 
@@ -10,7 +28,6 @@
 -  Ubicar la sección de transformación de la criatura (sliders y controles) en la parte inferior de la ventana.
 -  Mostrar la escena principal en la parte superior.
 -  Adaptar completamente la interfaz para móviles.
-
 
 ## Música y sonido
 
@@ -53,6 +70,6 @@
 7.  Recombinarlos para formar un nuevo set de criaturas.
 
 
-## Actualizar Script análitico de python
+## Actualizar Script análitico de Python
 
 - actualizar archivo de `main.js` y crear uno nuevo para `entorno.js`
