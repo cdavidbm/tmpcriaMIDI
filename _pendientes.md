@@ -1,12 +1,21 @@
+# Tareas para el miercoles:
+- Quitar isla y poner de fondo un hidra o un video
+- Remapear controlador MIDI
+- Renombrar criaturas en latin
+- Poner sonido
+- ** Integrar criaturas de Juli
+- ** Reemplazar localStorage por DB multi sesión
+
+
  # REQUISITOS GENERALES
 
 - UPS para regular cantidad de energia
 - Base hecha a la medida para el proyector que va a la mesa
 - Mesa especial hecha a la medida
-- Dos compus, uno orquesta proyecciones y el otro el software
+- Dos compus, uno orquesta proyecciones y el otro el software** (requiere trabajar en localStorage)
 - Decoración general
 - Marketing del proyecto:
-   - web
+   - Web
    - Programa de mano y/o insumos/merch de la experiencia:
 - Sistema de audio:
    - controles de la mesa
@@ -15,6 +24,10 @@
 - Textos/Carteles/Instrucciones explicativos de la experiencia
    - Diagrama flujo de la experiencia (tiempo estimado de la experiencia)
    - Sustento narrativo final
+- Caractetistica para la criatura que genera mas empatia con el usuario y produzca "apego". Ejemplo: ojos
+   - Nombre
+   - ...
+- La forma de lanzar la criatura será con un sensor de calor
 
 
 # PENDIENTES A NIVEL DE SOFTWARE
@@ -28,6 +41,7 @@
 -  Ubicar la sección de transformación de la criatura (sliders y controles) en la parte inferior de la ventana.
 -  Mostrar la escena principal en la parte superior.
 -  Adaptar completamente la interfaz para móviles.
+   - ¿Realidad aumentada?
 
 ## Música y sonido
 
@@ -73,3 +87,11 @@
 ## Actualizar Script análitico de Python
 
 - actualizar archivo de `main.js` y crear uno nuevo para `entorno.js`
+
+## Arquitectura multijugador:
+
+- en principio crear app/web con recordatorios.
+- el usuario ingresa a la web, se debe registrar para crear persistencia de datos y vinculo con criatura.
+    - en su dashboard, el usuario tiene info de su/s criatura/s 
+    - hay un botón para que la persona ingrese al mundo compartido (entorno) y pueda ver todas las criaturas del mundo (y otros usuarios)
+    - en el entorno hay una botón que devuelve a la perso a su dashboard
