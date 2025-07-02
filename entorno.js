@@ -94,8 +94,8 @@ function init() {
     scene.add(directionalLight);
 
     // Suelo
-    // Generar textura procedural de tierra y agua con varios tipos y texturas
-    function generateGroundWaterTexture() {
+    // Generar textura procedural marina con arena, rocas y corales
+    function generateMarineTexture() {
         const size = 128;
         const canvas = document.createElement('canvas');
         canvas.width = size;
@@ -103,57 +103,69 @@ function init() {
         const ctx = canvas.getContext('2d');
         const imgData = ctx.createImageData(size, size);
 
-        // Parámetros para controlar la cantidad y forma de agua
-        const waterThreshold = 0.89; // Más alto = menos agua
-        const waterScale = 0.09;
-        const waterOffsetX = Math.random() * 100;
-        const waterOffsetY = Math.random() * 100;
+        // Parámetros para controlar las zonas marinas
+        const coralThreshold = 0.85; // Más alto = menos corales
+        const rockThreshold = 0.75;
+        const coralScale = 0.08;
+        const rockScale = 0.12;
+        const offsetX = Math.random() * 100;
+        const offsetY = Math.random() * 100;
 
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 let idx = (y * size + x) * 4;
-                // Ruido base para manchas irregulares
-                let nx = x * waterScale + waterOffsetX;
-                let ny = y * waterScale + waterOffsetY;
-                let noise = Math.abs(Math.sin(nx) * Math.cos(ny)) + Math.random() * 0.25;
+                // Ruido base para zonas irregulares
+                let nx = x * coralScale + offsetX;
+                let ny = y * coralScale + offsetY;
+                let noise = Math.abs(Math.sin(nx) * Math.cos(ny)) + Math.random() * 0.3;
+
+                let rockNoise = Math.abs(Math.sin(x * rockScale) * Math.cos(y * rockScale));
 
                 // Sub-ruido para variedad de texturas
                 let detail = Math.abs(Math.sin(x * 0.3 + y * 0.2) * Math.cos(x * 0.13 - y * 0.17));
-                let detail2 = Math.abs(Math.sin(x * 0.12 + y * 0.18) * Math.cos(x * 0.21 - y * 0.09));
+                let detail2 = Math.abs(Math.sin(x * 0.15 + y * 0.18) * Math.cos(x * 0.21 - y * 0.09));
 
-                if (noise > waterThreshold) {
-                    // Agua
-                    if (detail > 0.7) {
-                        // Agua clara y ligera
-                        imgData.data[idx] = 120 + Math.floor(Math.random() * 30); // R
-                        imgData.data[idx + 1] = 180 + Math.floor(Math.random() * 40); // G
-                        imgData.data[idx + 2] = 240 + Math.floor(Math.random() * 15); // B
+                if (noise > coralThreshold) {
+                    // Zonas de coral - colores vibrantes
+                    if (detail > 0.6) {
+                        // Coral rosa/naranja
+                        imgData.data[idx] = 255; // R
+                        imgData.data[idx + 1] = 120 + Math.floor(Math.random() * 60); // G
+                        imgData.data[idx + 2] = 150 + Math.floor(Math.random() * 40); // B
                     } else {
-                        // Agua normal
-                        imgData.data[idx] = 40 + Math.floor(Math.random() * 30);   // R
-                        imgData.data[idx + 1] = 90 + Math.floor(Math.random() * 40); // G
-                        imgData.data[idx + 2] = 180 + Math.floor(Math.random() * 60); // B
+                        // Coral púrpura/azul
+                        imgData.data[idx] = 180 + Math.floor(Math.random() * 40);   // R
+                        imgData.data[idx + 1] = 100 + Math.floor(Math.random() * 50); // G
+                        imgData.data[idx + 2] = 255; // B
+                    }
+                } else if (rockNoise > rockThreshold) {
+                    // Rocas marinas - grises y azules oscuros
+                    if (detail2 > 0.7) {
+                        // Rocas oscuras
+                        const val = Math.floor(Math.random() * 40 + 20);
+                        imgData.data[idx] = val;     // R
+                        imgData.data[idx + 1] = val + 10; // G
+                        imgData.data[idx + 2] = val + 30; // B
+                    } else {
+                        // Rocas con musgo marino
+                        imgData.data[idx] = 60 + Math.floor(Math.random() * 30);     // R
+                        imgData.data[idx + 1] = 120 + Math.floor(Math.random() * 40); // G
+                        imgData.data[idx + 2] = 180 + Math.floor(Math.random() * 40); // B
                     }
                 } else {
-                    // Tierra
-                    if (detail > 0.7) {
-                        // Tierra oscura y densa
-                        const val = Math.floor(Math.random() * 30 + 30);
-                        imgData.data[idx] = val + Math.floor(Math.random() * 15);     // R
-                        imgData.data[idx + 1] = val + Math.floor(Math.random() * 10); // G
-                        imgData.data[idx + 2] = val - Math.floor(Math.random() * 10); // B
-                    } else if (detail2 > 0.6) {
-                        // Tierra rojiza
-                        const val = Math.floor(Math.random() * 40 + 60);
-                        imgData.data[idx] = val + 40 + Math.floor(Math.random() * 20); // R
-                        imgData.data[idx + 1] = val;                                   // G
-                        imgData.data[idx + 2] = val - 10;                              // B
+                    // Arena marina - tonos beige y azul claro
+                    if (detail > 0.5) {
+                        // Arena clara
+                        const val = Math.floor(Math.random() * 60 + 180);
+                        imgData.data[idx] = val; // R
+                        imgData.data[idx + 1] = val - 20; // G
+                        imgData.data[idx + 2] = val + 20; // B
                     } else {
-                        // Tierra normal
-                        const val = Math.floor(Math.random() * 60 + 60);
-                        imgData.data[idx] = val + Math.floor(Math.random() * 30);     // R
-                        imgData.data[idx + 1] = val + Math.floor(Math.random() * 15); // G
-                        imgData.data[idx + 2] = val;                                  // B
+                        // Arena con tonos azules
+                        const val = Math.floor(Math.random() * 40 + 140);
+                        imgData.data[idx] = val; // R
+                        imgData.data[idx + 1] = val + 30; // G
+                        imgData.data[idx + 2] = val + 60; // B
                     }
                 }
                 imgData.data[idx + 3] = 255;
@@ -230,27 +242,29 @@ function init() {
         return geometry;
     }
 
-    const groundWaterTexture = generateGroundWaterTexture();
-    const planeGeometry = generateElevatedCircleGeometry(40, 192); // Radio aumentado a 40, más segmentos para suavidad
+    const groundWaterTexture = generateMarineTexture();
+    const planeGeometry = generateElevatedCircleGeometry(40, 192);
     const planeMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
+        color: 0x4a90e2,
         map: groundWaterTexture,
         bumpMap: groundWaterTexture,
-        bumpScale: 0.7,
-        roughness: 0.8,
-        metalness: 0.1,
+        bumpScale: 1.2,
+        roughness: 0.3,
+        metalness: 0.6,
         transparent: true,
-        opacity: 0.7 // Sutil transparencia
+        opacity: 0.85,
+        emissive: 0x001122,
+        emissiveIntensity: 0.2
     });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;
     scene.add(plane);
 
-    // Añadir un wireframe sutil sobre el plano
+    // Añadir un wireframe sutil sobre el plano con colores marinos
     const wireframe = new THREE.LineSegments(
         new THREE.WireframeGeometry(planeGeometry),
-        new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.25, transparent: true })
+        new THREE.LineBasicMaterial({ color: 0x66ccff, opacity: 0.3, transparent: true })
     );
     wireframe.rotation.x = -Math.PI / 2;
     scene.add(wireframe);
@@ -258,57 +272,56 @@ function init() {
     // Añadir después de crear el plano
     createParticles();
 
-    // === RÍO ALIENÍGENA ===
-    function createAlienRiver() {
-        // Parámetros del río
-        const riverWidth = 2.8 + Math.random() * 1.2;
-        const riverLength = 60;
-        const riverSegments = 120;
-        const riverPoints = [];
-        const riverY = 0.3; // Un poco sobre el plano
+    // === CORRIENTE OCEÁNICA ===
+    function createOceanicCurrent() {
+        // Parámetros de la corriente oceánica
+        const currentWidth = 4.5 + Math.random() * 2;
+        const currentLength = 70;
+        const currentSegments = 140;
+        const currentPoints = [];
+        const currentY = 0.4;
 
-        // Generar puntos de una curva muy irregular y aleatoria
+        // Generar puntos de una corriente serpenteante
         let angle = Math.random() * Math.PI * 2;
-        let r = 18 + Math.random() * 6;
-        for (let i = 0; i < riverSegments; i++) {
-            const t = i / (riverSegments - 1);
+        let r = 20 + Math.random() * 8;
+        for (let i = 0; i < currentSegments; i++) {
+            const t = i / (currentSegments - 1);
 
-            // Variación aleatoria de ángulo y radio para mayor irregularidad
-            angle += (Math.random() - 0.5) * 0.25 + Math.sin(t * 4 + Math.random()) * 0.07;
-            r += (Math.random() - 0.5) * 0.7 + Math.sin(t * 3 + Math.random()) * 0.5;
+            // Movimiento oceánico más suave pero con remolinos
+            angle += (Math.random() - 0.5) * 0.15 + Math.sin(t * 6 + Math.random()) * 0.05;
+            r += (Math.random() - 0.5) * 0.8 + Math.sin(t * 4 + Math.random()) * 0.7;
 
-            // Limitar el radio para que no salga del plano
-            r = Math.max(10, Math.min(36, r));
+            r = Math.max(12, Math.min(36, r));
 
-            // Trayectoria con oscilaciones y "meandros"
-            const x = Math.cos(angle) * r + Math.sin(t * 2 + Math.random()) * 2.5 + Math.sin(i * 0.18 + Math.random()) * 1.2;
-            const z = Math.sin(angle) * r + Math.cos(t * 2.5 + Math.random()) * 2.5 + Math.cos(i * 0.13 + Math.random()) * 1.2;
+            // Trayectoria oceánica con ondulaciones
+            const x = Math.cos(angle) * r + Math.sin(t * 3 + Math.random()) * 3 + Math.sin(i * 0.2 + Math.random()) * 1.5;
+            const z = Math.sin(angle) * r + Math.cos(t * 3.5 + Math.random()) * 3 + Math.cos(i * 0.15 + Math.random()) * 1.5;
 
-            riverPoints.push(new THREE.Vector3(x, 0, z));
+            currentPoints.push(new THREE.Vector3(x, 0, z));
         }
 
-        // Crear geometría del río como un "ribbon" a lo largo de la curva
+        // Crear geometría de la corriente como un "ribbon" a lo largo de la curva
         const riverGeom = new THREE.BufferGeometry();
         const positions = [];
         const normals = [];
         const uvs = [];
-        for (let i = 0; i < riverPoints.length; i++) {
-            const p = riverPoints[i];
-            // Calcular dirección perpendicular al río en XZ
+        for (let i = 0; i < currentPoints.length; i++) {
+            const p = currentPoints[i];
+            // Calcular dirección perpendicular a la corriente en XZ
             let dir;
-            if (i < riverPoints.length - 1) {
-                dir = new THREE.Vector3().subVectors(riverPoints[i + 1], p);
+            if (i < currentPoints.length - 1) {
+                dir = new THREE.Vector3().subVectors(currentPoints[i + 1], p);
             } else {
-                dir = new THREE.Vector3().subVectors(p, riverPoints[i - 1]);
+                dir = new THREE.Vector3().subVectors(p, currentPoints[i - 1]);
             }
             dir.y = 0;
             dir.normalize();
             const perp = new THREE.Vector3(-dir.z, 0, dir.x);
 
             // Dos vértices por segmento (a cada lado del centro)
-            const left = new THREE.Vector3().addVectors(p, perp.clone().multiplyScalar(riverWidth));
-            const right = new THREE.Vector3().addVectors(p, perp.clone().multiplyScalar(-riverWidth));
-            left.y = right.y = riverY;
+            const left = new THREE.Vector3().addVectors(p, perp.clone().multiplyScalar(currentWidth));
+            const right = new THREE.Vector3().addVectors(p, perp.clone().multiplyScalar(-currentWidth));
+            left.y = right.y = currentY;
 
             positions.push(left.x, left.y, left.z);
             positions.push(right.x, right.y, right.z);
@@ -317,13 +330,13 @@ function init() {
             normals.push(0, 1, 0, 0, 1, 0);
 
             // UVs para textura
-            uvs.push(0, i / (riverPoints.length - 1));
-            uvs.push(1, i / (riverPoints.length - 1));
+            uvs.push(0, i / (currentPoints.length - 1));
+            uvs.push(1, i / (currentPoints.length - 1));
         }
 
         // Índices para triángulos
         const indices = [];
-        for (let i = 0; i < riverPoints.length - 1; i++) {
+        for (let i = 0; i < currentPoints.length - 1; i++) {
             const a = i * 2, b = i * 2 + 1, c = i * 2 + 2, d = i * 2 + 3;
             indices.push(a, b, c);
             indices.push(b, d, c);
@@ -335,172 +348,361 @@ function init() {
         riverGeom.setIndex(indices);
         riverGeom.computeVertexNormals();
 
-        // Textura procedural de agua alienígena
+        // Textura procedural oceánica mejorada
         const size = 128;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-        // Fondo azul claro con ondas
-        ctx.fillStyle = "#b6eaff";
+
+        // Fondo azul oceánico profundo
+        ctx.fillStyle = "#1e4d72";
         ctx.fillRect(0, 0, size, size);
+
+        // Ondas oceánicas más complejas
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
-                const v = Math.floor(180 + 40 * Math.sin(x * 0.15 + Math.cos(y * 0.13) * 2));
-                ctx.fillStyle = `rgba(${v},${v + 30},255,0.18)`;
+                const wave1 = Math.sin(x * 0.1 + y * 0.05) * 0.3;
+                const wave2 = Math.cos(x * 0.08 + y * 0.12) * 0.2;
+                const wave3 = Math.sin(x * 0.15 + y * 0.08) * 0.25;
+                const intensity = Math.floor(100 + 80 * (wave1 + wave2 + wave3));
+
+                ctx.fillStyle = `rgba(${Math.max(0, intensity - 40)},${intensity},${Math.min(255, intensity + 60)},0.3)`;
                 ctx.fillRect(x, y, 1, 1);
             }
         }
-        // Añadir reflejos y brillos
-        for (let i = 0; i < 80; i++) {
+
+        // Espuma y remolinos
+        for (let i = 0; i < 60; i++) {
             const rx = Math.random() * size;
             const ry = Math.random() * size;
-            const rr = Math.random() * 8 + 3;
+            const rr = Math.random() * 12 + 4;
             const grad = ctx.createRadialGradient(rx, ry, 0, rx, ry, rr);
-            grad.addColorStop(0, "rgba(255,255,255,0.18)");
-            grad.addColorStop(1, "rgba(255,255,255,0)");
+            grad.addColorStop(0, "rgba(200,240,255,0.4)");
+            grad.addColorStop(0.6, "rgba(100,200,255,0.2)");
+            grad.addColorStop(1, "rgba(100,200,255,0)");
             ctx.beginPath();
             ctx.arc(rx, ry, rr, 0, 2 * Math.PI);
             ctx.fillStyle = grad;
             ctx.fill();
         }
-        const riverTexture = new THREE.CanvasTexture(canvas);
-        riverTexture.wrapS = riverTexture.wrapT = THREE.RepeatWrapping;
-        riverTexture.repeat.set(8, 2);
 
-        const riverMat = new THREE.MeshStandardMaterial({
-            color: 0x88eaff,
-            map: riverTexture,
+        const currentTexture = new THREE.CanvasTexture(canvas);
+        currentTexture.wrapS = currentTexture.wrapT = THREE.RepeatWrapping;
+        currentTexture.repeat.set(6, 3);
+
+        const currentMat = new THREE.MeshStandardMaterial({
+            color: 0x2e7db8,
+            map: currentTexture,
             transparent: true,
-            opacity: 0.82,
-            roughness: 0.18,
-            metalness: 0.7,
-            emissive: 0x66ccff,
-            emissiveIntensity: 0.18,
+            opacity: 0.9,
+            roughness: 0.1,
+            metalness: 0.8,
+            emissive: 0x1a4d72,
+            emissiveIntensity: 0.3,
             side: THREE.DoubleSide
         });
 
-        const riverMesh = new THREE.Mesh(riverGeom, riverMat);
-        riverMesh.receiveShadow = true;
-        riverMesh.castShadow = false;
-        riverMesh.position.y = 0; // Ya está a la altura adecuada
-        scene.add(riverMesh);
+        const currentMesh = new THREE.Mesh(riverGeom, currentMat);
+        currentMesh.receiveShadow = true;
+        currentMesh.castShadow = false;
+        currentMesh.position.y = 0;
+        scene.add(currentMesh);
     }
-    createAlienRiver();
+    createOceanicCurrent();
 
-    // === PLANTAS ALIENÍGENAS ===
-    function createAlienPlants() {
-        const plantCount = 7;
-        for (let i = 0; i < plantCount; i++) {
-            // Posición aleatoria dentro del radio del plano, pero no en el centro
-            const r = 8 + Math.random() * 24;
+    // === CORALES Y ALGAS MARINAS ===
+    function createMarineLife() {
+        const marineCount = 12;
+        for (let i = 0; i < marineCount; i++) {
+            const r = 10 + Math.random() * 26;
             const theta = Math.random() * Math.PI * 2;
             const x = Math.cos(theta) * r;
             const z = Math.sin(theta) * r;
-            const y = 0.7; // Un poco sobre el plano
+            const y = 0.5;
 
-            // Tronco: cilindro suave y curvado
-            const trunkHeight = 2.2 + Math.random() * 1.5;
-            const trunkCurve = 0.3 + Math.random() * 0.5;
-            const trunkGeom = new THREE.CylinderGeometry(0.18, 0.28, trunkHeight, 12, 32, false);
-            trunkGeom.translate(0, trunkHeight / 2, 0);
-            // Curvar el tronco
-            for (let v = 0; v < trunkGeom.attributes.position.count; v++) {
-                let px = trunkGeom.attributes.position.getX(v);
-                let py = trunkGeom.attributes.position.getY(v);
-                let pz = trunkGeom.attributes.position.getZ(v);
-                trunkGeom.attributes.position.setX(v, px + Math.sin(py * 1.2) * trunkCurve);
-                trunkGeom.attributes.position.setZ(v, pz + Math.cos(py * 0.8) * trunkCurve * 0.7);
-            }
-            trunkGeom.computeVertexNormals();
-            const trunkMat = new THREE.MeshStandardMaterial({
-                color: 0x7c4f2c,
-                roughness: 0.7,
-                metalness: 0.2
-            });
-            const trunk = new THREE.Mesh(trunkGeom, trunkMat);
-            trunk.position.set(x, y, z);
+            if (Math.random() > 0.6) {
+                // Crear coral
+                const coralHeight = 1.5 + Math.random() * 2;
+                const coralGeom = new THREE.ConeGeometry(0.3 + Math.random() * 0.4, coralHeight, 8, 16, false);
+                coralGeom.translate(0, coralHeight / 2, 0);
 
-            // Ramas: varias, curvas y finas
-            const branchCount = 2 + Math.floor(Math.random() * 3);
-            for (let b = 0; b < branchCount; b++) {
-                const branchLen = 1.2 + Math.random() * 1.2;
-                const branchGeom = new THREE.CylinderGeometry(0.05, 0.09, branchLen, 8, 16, false);
-                branchGeom.translate(0, branchLen / 2, 0);
-                // Curvar la rama
-                for (let v = 0; v < branchGeom.attributes.position.count; v++) {
-                    let px = branchGeom.attributes.position.getX(v);
-                    let py = branchGeom.attributes.position.getY(v);
-                    let pz = branchGeom.attributes.position.getZ(v);
-                    branchGeom.attributes.position.setX(v, px + Math.sin(py * 1.5 + b) * 0.18);
-                    branchGeom.attributes.position.setZ(v, pz + Math.cos(py * 1.1 + b) * 0.13);
+                // Deformar para hacer más orgánico
+                for (let v = 0; v < coralGeom.attributes.position.count; v++) {
+                    let px = coralGeom.attributes.position.getX(v);
+                    let py = coralGeom.attributes.position.getY(v);
+                    let pz = coralGeom.attributes.position.getZ(v);
+
+                    const noise = Math.sin(py * 2 + i) * 0.1 + Math.cos(py * 3 + i) * 0.08;
+                    coralGeom.attributes.position.setX(v, px + noise);
+                    coralGeom.attributes.position.setZ(v, pz + noise * 0.7);
                 }
-                branchGeom.computeVertexNormals();
-                const branchMat = new THREE.MeshStandardMaterial({
-                    color: 0x6a3d1a,
-                    roughness: 0.6,
-                    metalness: 0.18
-                });
-                const branch = new THREE.Mesh(branchGeom, branchMat);
-                branch.position.set(0, trunkHeight * (0.5 + 0.2 * b), 0);
-                branch.rotation.y = Math.random() * Math.PI * 2;
-                branch.rotation.z = Math.PI / 4 + Math.random() * Math.PI / 4;
-                trunk.add(branch);
+                coralGeom.computeVertexNormals();
 
-                // Hojas: suavizadas, verdes, alienígenas
-                const leafCount = 3 + Math.floor(Math.random() * 4);
-                for (let l = 0; l < leafCount; l++) {
-                    const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.18, 12, 12);
-                    // Aplastar la esfera para hacerla más como hoja
-                    for (let v = 0; v < leafGeom.attributes.position.count; v++) {
-                        let py = leafGeom.attributes.position.getY(v);
-                        leafGeom.attributes.position.setY(v, py * (0.45 + Math.random() * 0.2));
-                    }
-                    leafGeom.computeVertexNormals();
+                const coralMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(Math.random() * 0.2 + 0.8, 0.8, 0.6),
+                    roughness: 0.4,
+                    metalness: 0.3,
+                    emissive: new THREE.Color().setHSL(Math.random() * 0.2 + 0.8, 0.6, 0.3),
+                    emissiveIntensity: 0.4
+                });
+                const coral = new THREE.Mesh(coralGeom, coralMat);
+                coral.position.set(x, y, z);
+                coral.rotation.y = Math.random() * Math.PI * 2;
+
+                // Añadir pólipos pequeños
+                for (let p = 0; p < 5; p++) {
+                    const polypGeom = new THREE.SphereGeometry(0.05 + Math.random() * 0.03, 6, 6);
+                    const polypMat = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color().setHSL(Math.random() * 0.3 + 0.7, 0.9, 0.7),
+                        emissive: new THREE.Color().setHSL(Math.random() * 0.3 + 0.7, 0.7, 0.5),
+                        emissiveIntensity: 0.6
+                    });
+                    const polyp = new THREE.Mesh(polypGeom, polypMat);
+                    polyp.position.set(
+                        (Math.random() - 0.5) * 0.6,
+                        coralHeight * (0.6 + Math.random() * 0.4),
+                        (Math.random() - 0.5) * 0.6
+                    );
+                    coral.add(polyp);
+                }
+
+                scene.add(coral);
+            } else {
+                // Crear algas marinas
+                const algaeHeight = 2 + Math.random() * 1.8;
+                const algaeGeom = new THREE.CylinderGeometry(0.08, 0.12, algaeHeight, 6, 20, false);
+                algaeGeom.translate(0, algaeHeight / 2, 0);
+
+                // Ondular las algas
+                for (let v = 0; v < algaeGeom.attributes.position.count; v++) {
+                    let px = algaeGeom.attributes.position.getX(v);
+                    let py = algaeGeom.attributes.position.getY(v);
+                    let pz = algaeGeom.attributes.position.getZ(v);
+
+                    const sway = Math.sin(py * 1.5 + i) * 0.3 + Math.cos(py * 2 + i) * 0.2;
+                    algaeGeom.attributes.position.setX(v, px + sway);
+                    algaeGeom.attributes.position.setZ(v, pz + sway * 0.5);
+                }
+                algaeGeom.computeVertexNormals();
+
+                const algaeMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(0.3 + Math.random() * 0.2, 0.7, 0.4),
+                    roughness: 0.6,
+                    metalness: 0.2,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const algae = new THREE.Mesh(algaeGeom, algaeMat);
+                algae.position.set(x, y, z);
+                algae.rotation.y = Math.random() * Math.PI * 2;
+
+                // Añadir hojas flotantes
+                for (let l = 0; l < 3; l++) {
+                    const leafGeom = new THREE.PlaneGeometry(0.3 + Math.random() * 0.2, 0.6 + Math.random() * 0.3);
                     const leafMat = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color().setHSL(0.28 + Math.random() * 0.25, 0.85, 0.45 + Math.random() * 0.2),
-                        roughness: 0.35,
-                        metalness: 0.25,
+                        color: new THREE.Color().setHSL(0.35 + Math.random() * 0.15, 0.8, 0.5),
+                        roughness: 0.4,
+                        metalness: 0.1,
                         transparent: true,
-                        opacity: 0.85
+                        opacity: 0.7,
+                        side: THREE.DoubleSide
                     });
                     const leaf = new THREE.Mesh(leafGeom, leafMat);
                     leaf.position.set(
-                        0.18 + Math.random() * 0.4,
-                        branchLen * (0.7 + Math.random() * 0.3),
-                        0.18 + Math.random() * 0.4
+                        (Math.random() - 0.5) * 0.4,
+                        algaeHeight * (0.5 + Math.random() * 0.5),
+                        (Math.random() - 0.5) * 0.4
                     );
                     leaf.rotation.set(
+                        Math.random() * Math.PI * 0.3,
                         Math.random() * Math.PI,
-                        Math.random() * Math.PI,
-                        Math.random() * Math.PI
+                        Math.random() * Math.PI * 0.3
                     );
-                    branch.add(leaf);
-
-                    // Flor: esfera pequeña y colorida en la punta de la hoja
-                    if (Math.random() > 0.5) {
-                        const flowerGeom = new THREE.SphereGeometry(0.09 + Math.random() * 0.06, 8, 8);
-                        const flowerMat = new THREE.MeshStandardMaterial({
-                            color: new THREE.Color().setHSL(0.7 + Math.random() * 0.3, 0.7, 0.7),
-                            emissive: new THREE.Color().setHSL(0.7 + Math.random() * 0.3, 0.7, 0.5),
-                            emissiveIntensity: 0.7,
-                            roughness: 0.2,
-                            metalness: 0.5
-                        });
-                        const flower = new THREE.Mesh(flowerGeom, flowerMat);
-                        flower.position.set(
-                            0.05 + Math.random() * 0.1,
-                            0.18 + Math.random() * 0.1,
-                            0.05 + Math.random() * 0.1
-                        );
-                        leaf.add(flower);
-                    }
+                    algae.add(leaf);
                 }
+
+                scene.add(algae);
             }
-            scene.add(trunk);
         }
     }
-    createAlienPlants();
+    createMarineLife();
+
+    // =========================
+    // === LECHO MARINO
+    // =========================
+    function createSeaBed() {
+        // Zona de lecho marino: área arenosa con conchas y vegetación acuática
+        const seabedRadius = 8 + Math.random() * 3;
+        const seabedTheta = Math.random() * Math.PI * 2;
+        const seabedDist = 16 + Math.random() * 8;
+        const sx = Math.cos(seabedTheta) * seabedDist;
+        const sz = Math.sin(seabedTheta) * seabedDist;
+        const sy = 0.25;
+
+        const segments = 48;
+        const geometry = new THREE.CircleGeometry(seabedRadius, segments);
+        geometry.rotateX(-Math.PI / 2);
+
+        // Irregularidad en el borde y altura
+        for (let i = 0; i < geometry.attributes.position.count; i++) {
+            let x = geometry.attributes.position.getX(i);
+            let z = geometry.attributes.position.getZ(i);
+            let r = Math.sqrt(x * x + z * z);
+
+            // Borde irregular marino
+            if (r > seabedRadius * 0.7) {
+                const angle = Math.atan2(z, x);
+                const noise = Math.sin(angle * 4 + Math.random() * 2) * 0.5 + Math.cos(angle * 6 + Math.random()) * 0.3;
+                const factor = 1 + 0.1 * noise + (Math.random() - 0.5) * 0.06;
+                x *= factor;
+                z *= factor;
+                geometry.attributes.position.setX(i, x);
+                geometry.attributes.position.setZ(i, z);
+            }
+
+            // Ondulaciones del lecho marino
+            let y = 0.08 * Math.cos((r / seabedRadius) * Math.PI / 2);
+            y += Math.sin(x * 1.5 + z * 1.2) * 0.1 * (1 - r / seabedRadius);
+            y += (Math.random() - 0.5) * 0.05 * (1 - r / seabedRadius);
+            geometry.attributes.position.setY(i, y);
+        }
+        geometry.computeVertexNormals();
+
+        // Textura procedural de lecho marino
+        function generateSeabedTexture(size = 128) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo base arena marina
+            ctx.fillStyle = "#d4c4a8";
+            ctx.fillRect(0, 0, size, size);
+
+            // Arena con tonos azulados
+            for (let i = 0; i < 800; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const r = Math.random() * 4 + 1;
+                const brightness = 200 + Math.floor(Math.random() * 40);
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(${brightness - 20},${brightness},${brightness + 30},${Math.random() * 0.3 + 0.1})`;
+                ctx.fill();
+            }
+
+            // Conchas y restos marinos
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const r = Math.random() * 3 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(${220 + Math.random() * 30},${200 + Math.random() * 40},${180 + Math.random() * 50},${Math.random() * 0.4 + 0.3})`;
+                ctx.fill();
+            }
+
+            // Pequeñas algas en el lecho
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const len = Math.random() * 6 + 3;
+                const angle = Math.random() * Math.PI * 2;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -len);
+                ctx.strokeStyle = `rgba(${80 + Math.random() * 40},${140 + Math.random() * 60},${100 + Math.random() * 40},${Math.random() * 0.3 + 0.2})`;
+                ctx.lineWidth = Math.random() * 1 + 0.5;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(4, 4);
+            return texture;
+        }
+
+        const seabedTexture = generateSeabedTexture();
+
+        const material = new THREE.MeshStandardMaterial({
+            color: 0xa8c4d4,
+            map: seabedTexture,
+            bumpMap: seabedTexture,
+            bumpScale: 0.15,
+            roughness: 0.7,
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.9
+        });
+        const seabed = new THREE.Mesh(geometry, material);
+        seabed.position.set(sx, sy, sz);
+        seabed.receiveShadow = true;
+        scene.add(seabed);
+    }
+    createSeaBed();
+
+    // === FORMACIÓN ROCOSA MARINA ===
+    function createMarineRock() {
+        // Formación rocosa: estructura irregular submarina
+        const rockRadius = 7 + Math.random() * 2;
+        const rockTheta = Math.random() * Math.PI * 2;
+        const rockDist = 20 + Math.random() * 8;
+        const rx = Math.cos(rockTheta) * rockDist;
+        const rz = Math.sin(rockTheta) * rockDist;
+        const ry = 0.3;
+
+        // Geometría irregular para roca marina
+        const widthSegments = 10 + Math.floor(Math.random() * 4);
+        const heightSegments = 8 + Math.floor(Math.random() * 3);
+        const geometry = new THREE.SphereGeometry(rockRadius, widthSegments, heightSegments, 0, Math.PI * 2, 0, Math.PI / 1.4);
+
+        // Deformar para aspecto rocoso marino
+        for (let i = 0; i < geometry.attributes.position.count; i++) {
+            let x = geometry.attributes.position.getX(i);
+            let y = geometry.attributes.position.getY(i);
+            let z = geometry.attributes.position.getZ(i);
+
+            // Forma rocosa irregular
+            y *= 0.8;
+
+            // Erosión marina
+            const r = Math.sqrt(x * x + z * z);
+            const angle = Math.atan2(z, x);
+            let erosion = Math.sin(angle * 5 + Math.random() * 0.7) * 0.4;
+            erosion += Math.cos(angle * 3 + r * 0.3) * 0.3;
+
+            // Rugosidad
+            let roughness = (Math.random() - 0.5) * 0.8;
+            y += erosion * 0.8 * (1 - r / rockRadius) + roughness * 0.2 * (1 - r / rockRadius);
+
+            geometry.attributes.position.setY(i, y);
+        }
+        geometry.computeVertexNormals();
+
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x4a6b7c,
+            roughness: 0.8,
+            metalness: 0.4,
+            transparent: true,
+            opacity: 0.95,
+            flatShading: false,
+            emissive: 0x0a1520,
+            emissiveIntensity: 0.1
+        });
+        const rock = new THREE.Mesh(geometry, material);
+        rock.position.set(rx, ry, rz);
+        rock.receiveShadow = true;
+        rock.castShadow = true;
+        scene.add(rock);
+
+        // Guardar la roca para colisiones
+        window._alienHill = rock;
+    }
+    createMarineRock();
 
     cargarCriaturas();
     animate();
@@ -1167,21 +1369,21 @@ function createGreenMeadow() {
         let z = geometry.attributes.position.getZ(i);
         let r = Math.sqrt(x * x + z * z);
 
-        // Borde irregular
+        // Borde irregular marino
         if (r > meadowRadius * 0.7) {
             const angle = Math.atan2(z, x);
-            const noise = Math.sin(angle * 3 + Math.random() * 2) * 0.7 + Math.cos(angle * 7 + Math.random()) * 0.4;
-            const factor = 1 + 0.13 * noise + (Math.random() - 0.5) * 0.09;
+            const noise = Math.sin(angle * 4 + Math.random() * 2) * 0.5 + Math.cos(angle * 6 + Math.random()) * 0.3;
+            const factor = 1 + 0.1 * noise + (Math.random() - 0.5) * 0.06;
             x *= factor;
             z *= factor;
             geometry.attributes.position.setX(i, x);
             geometry.attributes.position.setZ(i, z);
         }
 
-        // Altura brusca e irregular
-        let y = 0.05 * Math.cos((r / meadowRadius) * Math.PI / 2);
-        y += Math.sin(x * 1.2 + z * 0.7) * 0.13 * (1 - r / meadowRadius);
-        y += (Math.random() - 0.5) * 0.08 * (1 - r / meadowRadius);
+        // Ondulaciones del lecho marino
+        let y = 0.08 * Math.cos((r / meadowRadius) * Math.PI / 2);
+        y += Math.sin(x * 1.5 + z * 1.2) * 0.1 * (1 - r / meadowRadius);
+        y += (Math.random() - 0.5) * 0.05 * (1 - r / meadowRadius);
         geometry.attributes.position.setY(i, y);
     }
     geometry.computeVertexNormals();
