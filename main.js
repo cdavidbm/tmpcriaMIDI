@@ -6,7 +6,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 // Variables globales para el manejo de la escena y animaciones
 let mainMesh = null; // Referencia a la malla principal del modelo
 let mainModel = null; // Referencia al grupo raíz del modelo
-// let autoRotate = false; // Eliminado: no se usa realmente
 let animationMixer = null; // Mezclador de animaciones
 let animationAction = null; // Acción de animación activa
 let animationPlaying = false; // Estado de reproducción de animación
@@ -14,6 +13,7 @@ let animationPlaying = false; // Estado de reproducción de animación
 // Variables globales adicionales
 let wireframeMode = false;
 let morphTargets = {};
+let morphSliders = []; // Array para almacenar referencias a los sliders de morph
 const channel = new BroadcastChannel('criaturas');
 
 // Configuración básica de la escena y el renderer
@@ -103,33 +103,68 @@ loader.load(
             animationAction = animationMixer.clipAction(gltf.animations[0]);
         }
 
+        // Nombres personalizados en orden
+        const customMorphNames = [
+            'Chrysaora plocamia',
+            'Agaricia fragilis',
+            'Octopus briareus',
+            'Epidendrum secundum',
+            'Miconia squamulosa',
+            'Bidens rubifolia'
+        ];
+
         // Busca mallas con morph targets (shape keys) y crea sliders para controlarlos
         gltf.scene.traverse(obj => {
             if (obj.isMesh && obj.morphTargetInfluences && obj.morphTargetDictionary) {
                 const morphDict = obj.morphTargetDictionary;
                 const morphInfluences = obj.morphTargetInfluences;
                 const controlsDiv = document.getElementById('morph-controls');
-                Object.keys(morphDict).forEach((name, idx) => {
-                    const label = document.createElement('label');
-                    const slider = document.createElement('input');
-                    slider.type = 'range';
-                    slider.min = 0;
-                    slider.max = 1;
-                    slider.step = 0.01;
-                    slider.value = morphInfluences[morphDict[name]];
-                    slider.style.setProperty('--val', slider.value * 100);
-                    // Actualiza el valor del morph target al mover el slider
-                    slider.oninput = () => {
-                        morphInfluences[morphDict[name]] = parseFloat(slider.value);
+
+                // Solo procesar la primera malla con morph targets
+                if (morphSliders.length === 0) {
+                    console.log('Procesando malla:', obj.name || 'sin_nombre');
+                    console.log('Morph dictionary:', morphDict);
+
+                    // Asegurar que mainMesh apunte a la malla con morph targets
+                    if (!mainMesh || !mainMesh.morphTargetDictionary) {
+                        mainMesh = obj;
+                        console.log('mainMesh actualizado a malla con morph targets');
+                    }
+
+                    // Obtener las claves ordenadas por su índice en el diccionario
+                    const sortedMorphKeys = Object.keys(morphDict).sort((a, b) => morphDict[a] - morphDict[b]);
+                    console.log('Morph targets encontrados:', sortedMorphKeys);
+
+                    sortedMorphKeys.forEach((name, idx) => {
+                        const label = document.createElement('label');
+                        const slider = document.createElement('input');
+                        slider.type = 'range';
+                        slider.min = 0;
+                        slider.max = 1;
+                        slider.step = 0.01;
+                        slider.value = morphInfluences[morphDict[name]];
                         slider.style.setProperty('--val', slider.value * 100);
-                    };
-                    label.appendChild(slider);
-                    const span = document.createElement('span');
-                    span.className = 'knob-label-text';
-                    span.textContent = name;
-                    label.appendChild(span);
-                    controlsDiv.appendChild(label);
-                });
+
+                        // Actualiza el valor del morph target al mover el slider
+                        slider.oninput = () => {
+                            morphInfluences[morphDict[name]] = parseFloat(slider.value);
+                            slider.style.setProperty('--val', slider.value * 100);
+                        };
+
+                        label.appendChild(slider);
+                        const span = document.createElement('span');
+                        span.className = 'knob-label-text';
+                        // Usar nombre personalizado por índice, o el original si no hay suficientes
+                        span.textContent = customMorphNames[idx] || name;
+                        label.appendChild(span);
+                        controlsDiv.appendChild(label);
+
+                        // Guardar referencia al slider en el array en el orden correcto
+                        morphSliders.push(slider);
+                    });
+
+                    console.log('Sliders creados:', morphSliders.length);
+                }
             }
         });
     },
@@ -278,51 +313,65 @@ function onMIDIFailure() {
 // Manejador de mensajes MIDI: mapea los CC a los sliders correspondientes
 function handleMIDIMessage(event) {
     const [status, cc, value] = event.data;
+    console.log('MIDI recibido:', { status: status.toString(16), cc, value });
+
     // Solo procesa mensajes de tipo Control Change (CC)
     if ((status & 0xF0) === 0xB0) {
-        // Morph knobs: CC MIDI  (asigna a los sliders de morph target)
+        // Morph knobs: CC MIDI (asigna a los sliders de morph target)
         if ([16, 17, 18, 20, 21, 22].includes(cc)) {
             // Mapea los CC a índices:
             const ccToIdx = { 16: 0, 17: 1, 18: 2, 20: 3, 21: 4, 22: 5 };
             const idx = ccToIdx[cc];
-            const morphControls = document.querySelectorAll('#morph-controls input[type="range"]');
-            if (morphControls[idx]) {
+
+            console.log(`CC ${cc} -> slider índice ${idx}, sliders disponibles: ${morphSliders.length}`);
+
+            // Usar el array de referencias directas en lugar de querySelectorAll
+            if (morphSliders[idx]) {
                 // Convierte el valor MIDI (0-127) al rango del slider (0-1)
                 const v = value / 127;
-                morphControls[idx].value = v;
-                morphControls[idx].dispatchEvent(new Event('input'));
+                morphSliders[idx].value = v;
+                morphSliders[idx].style.setProperty('--val', v * 100);
+                morphSliders[idx].dispatchEvent(new Event('input'));
+                console.log(`Slider ${idx} actualizado a ${v}`);
+            } else {
+                console.warn(`No se encontró slider en índice ${idx}`);
             }
         }
-        // Color: CC 116 (0-127 -> 0-360)
+        // Color: CC 57 (0-127 -> 0-360)
         if (cc === 57) {
             const colorSlider = document.getElementById('color');
             if (colorSlider) {
                 const v = Math.round((value / 127) * 360);
                 colorSlider.value = v;
                 colorSlider.dispatchEvent(new Event('input'));
+                console.log(`Color actualizado a ${v}`);
             }
         }
-        // Tamaño: CC 117 (0-127 -> 50-150)
+        // Tamaño: CC 61 (0-127 -> 50-150)
         if (cc === 61) {
             const sizeSlider = document.getElementById('size');
             if (sizeSlider) {
                 const v = Math.round(50 + (value / 127) * 100);
                 sizeSlider.value = v;
                 sizeSlider.dispatchEvent(new Event('input'));
+                console.log(`Tamaño actualizado a ${v}`);
             }
         }
     }
-    // Detectar Note On (0x90) en cualquier canal y nota 27
-    if ((status & 0xF0) === 0x90 && cc === 27 && value > 0) {
-        window.aprobarCriatura();
-    }
-    // Detectar Note On (0x90) en cualquier canal y nota 25
-    if ((status & 0xF0) === 0x90 && cc === 25 && value > 0) {
-        window.girarFiguraY();
-    }
-    // Detectar Note On (0x90) en cualquier canal y nota 26
-    if ((status & 0xF0) === 0x90 && cc === 26 && value > 0) {
-        window.toggleWireframe();
+    // Detectar Note On (0x90) - corregir: el segundo parámetro es la nota, no cc
+    if ((status & 0xF0) === 0x90 && value > 0) {
+        const note = cc; // En Note On, el segundo byte es la nota
+        console.log(`Nota MIDI: ${note}`);
+
+        if (note === 27) {
+            window.aprobarCriatura();
+        }
+        if (note === 25) {
+            window.girarFiguraY();
+        }
+        if (note === 26) {
+            window.toggleWireframe();
+        }
     }
 }
 // --- FIN: Integración MIDI ---
@@ -342,24 +391,38 @@ window.addEventListener('keydown', function (e) {
 
 // Agregar las nuevas funciones de control
 window.resetAll = function () {
-    if (mainMesh && mainMesh.morphTargetDictionary) {
+    if (mainMesh && mainMesh.morphTargetDictionary && mainMesh.morphTargetInfluences) {
         Object.keys(mainMesh.morphTargetDictionary).forEach(name => {
             const index = mainMesh.morphTargetDictionary[name];
             mainMesh.morphTargetInfluences[index] = 0;
         });
     }
 
-    // Reset sliders
-    document.querySelectorAll('input[type="range"]').forEach(slider => {
-        slider.value = slider.id === 'size' ? '100' : '0';
-        slider.dispatchEvent(new Event('input'));
+    // Reset sliders usando las referencias almacenadas
+    morphSliders.forEach(slider => {
+        if (slider) {
+            slider.value = 0;
+            slider.style.setProperty('--val', 0);
+            slider.dispatchEvent(new Event('input'));
+        }
     });
 
-    // Reset auto-rotación
-    autoRotate = false;
-    controls.autoRotate = false;
+    // Reset otros sliders
+    const colorSlider = document.getElementById('color');
+    const sizeSlider = document.getElementById('size');
+
+    if (colorSlider) {
+        colorSlider.value = 0;
+        colorSlider.dispatchEvent(new Event('input'));
+    }
+
+    if (sizeSlider) {
+        sizeSlider.value = 100;
+        sizeSlider.dispatchEvent(new Event('input'));
+    }
 
     // Reset wireframe
+    wireframeMode = false;
     if (mainMesh) {
         if (Array.isArray(mainMesh.material)) {
             mainMesh.material.forEach(mat => {
