@@ -4,8 +4,8 @@
 
 // Importaciones
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // === Variables y constantes principales ===
 // (Modifica aquí los parámetros globales del entorno)
@@ -70,90 +70,15 @@ function initSession() {
 function init() {
     initSession();
 
-    // Fondo procedural de espacio con estrellas, planetas y galaxias
-    function generateSpaceBackground() {
-        const w = 2048, h = 1024;
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-
-        // Fondo gradiente oscuro
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, "#0a0c1a");
-        grad.addColorStop(0.5, "#1a2340");
-        grad.addColorStop(1, "#0a0c1a");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // Estrellas pequeñas
-        for (let i = 0; i < 1200; i++) {
-            const x = Math.random() * w;
-            const y = Math.random() * h;
-            const r = Math.random() * 0.7 + 0.2;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, 2 * Math.PI);
-            ctx.fillStyle = `rgba(255,255,${200 + Math.floor(Math.random() * 55)},${Math.random() * 0.7 + 0.3})`;
-            ctx.fill();
-        }
-
-        // Estrellas grandes y brillantes
-        for (let i = 0; i < 30; i++) {
-            const x = Math.random() * w;
-            const y = Math.random() * h;
-            const r = Math.random() * 2.5 + 1.2;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, 2 * Math.PI);
-            ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.5})`;
-            ctx.shadowColor = "#fff";
-            ctx.shadowBlur = 12 + Math.random() * 10;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
-        // Galaxias (manchas difusas de color)
-        for (let i = 0; i < 3; i++) {
-            const gx = Math.random() * w * 0.8 + w * 0.1;
-            const gy = Math.random() * h * 0.7 + h * 0.15;
-            const gr = Math.random() * 120 + 80;
-            const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
-            grad.addColorStop(0, `rgba(${180 + Math.random() * 60},${120 + Math.random() * 80},255,0.25)`);
-            grad.addColorStop(0.3, `rgba(180,180,255,0.10)`);
-            grad.addColorStop(1, "rgba(0,0,0,0)");
-            ctx.beginPath();
-            ctx.arc(gx, gy, gr, 0, 2 * Math.PI);
-            ctx.fillStyle = grad;
-            ctx.fill();
-        }
-
-        // Planetas (círculos grandes con color)
-        for (let i = 0; i < 2; i++) {
-            const px = Math.random() * w * 0.7 + w * 0.15;
-            const py = Math.random() * h * 0.5 + h * 0.2;
-            const pr = Math.random() * 60 + 40;
-            const color = i === 0
-                ? "rgba(120,180,255,0.25)"
-                : "rgba(255,200,120,0.18)";
-            ctx.beginPath();
-            ctx.arc(px, py, pr, 0, 2 * Math.PI);
-            ctx.fillStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 30;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
-        return new THREE.CanvasTexture(canvas);
-    }
-
     scene = new THREE.Scene();
-    // Asignar fondo procedural de espacio
-    scene.background = generateSpaceBackground();
+    // CAMBIO: Quitar fondo - dejar transparente
+    // scene.background = generateSpaceBackground();
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0); // Fondo transparente
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);

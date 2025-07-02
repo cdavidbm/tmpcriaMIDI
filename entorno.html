@@ -10,7 +10,41 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a2a3d, #2c3e50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Fondo plano personalizable */
+        #fondo-entorno {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000, #2c3e50);
+            z-index: -1;
+        }
+
+        /* Contenedor principal del entorno */
+        #contenedor-entorno {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Escena 3D del entorno - ahora ocupa toda la ventana */
+        #entorno {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         .info {
@@ -21,25 +55,23 @@
             color: white;
             padding: 15px;
             border-radius: 10px;
-            font-family: Arial, sans-serif;
-        }
-
-        #entorno{
-            width: 500px;
-            height: 500px;
+            z-index: 2;
         }
     </style>
 </head>
 
 <body>
-    <div class="info">
-        <h3>🌍 Entorno de Criaturas</h3>
-        <p>Criaturas activas: <span id="numCriaturas">0</span></p>
+    <div id="fondo-entorno">
+        <div class="info">
+            <h3>🌍 Entorno de Criaturas</h3>
+            <p>Criaturas activas: <span id="numCriaturas">0</span></p>
+        </div>
+        <div id="contenedor-entorno">
+            <div id="entorno"></div>
+        </div>
+
     </div>
 
-    <!-- 
-    <div id="entorno"></div>
-    -->
 
     <script type="module" src="entorno.js"></script>
 </body>
