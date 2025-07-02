@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entorno de Criaturas</title>
+    <script src="https://unpkg.com/hydra-synth"></script>
     <style>
         body {
             margin: 0;
@@ -24,8 +25,18 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(135deg, #000000, #2c3e50);
+           /* background: linear-gradient(135deg, #000000, #2c3e50); */
             z-index: -1;
+        }
+
+        /* Canvas de Hydra */
+        #hydra-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
 
         /* Contenedor principal del entorno */
@@ -62,6 +73,7 @@
 
 <body>
     <div id="fondo-entorno">
+        <canvas id="hydra-canvas"></canvas>
         <div class="info">
             <h3>🌍 Entorno de Criaturas</h3>
             <p>Criaturas activas: <span id="numCriaturas">0</span></p>
@@ -72,6 +84,22 @@
 
     </div>
 
+    <script type="module">
+        // Inicializar Hydra
+        const hydra = new Hydra({
+            canvas: document.getElementById('hydra-canvas'),
+            detectAudio: false
+        });
+
+        // Animación de Hydra para el fondo
+        osc(10, 0.1, 0.8)
+            .color(0.2, 0.1, 0.8)
+            .rotate(0.1, 0.1)
+            .mult(osc(20, 0.1).rotate(0, -0.1))
+            .blend(noise(4).color(0.1, 0.2, 0.3), 0.6)
+            .modulateScale(osc(8).rotate(0.05), 0.2)
+            .out();
+    </script>
 
     <script type="module" src="entorno.js"></script>
 </body>
