@@ -348,39 +348,39 @@ function init() {
         riverGeom.setIndex(indices);
         riverGeom.computeVertexNormals();
 
-        // Textura procedural oceánica mejorada
+        // Textura procedural oceánica más gelida y clara
         const size = 128;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
 
-        // Fondo azul oceánico profundo
-        ctx.fillStyle = "#1e4d72";
+        // Fondo azul gelido claro
+        ctx.fillStyle = "#b8e0ff";
         ctx.fillRect(0, 0, size, size);
 
-        // Ondas oceánicas más complejas
+        // Ondas gelidas más suaves y claras
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
-                const wave1 = Math.sin(x * 0.1 + y * 0.05) * 0.3;
-                const wave2 = Math.cos(x * 0.08 + y * 0.12) * 0.2;
-                const wave3 = Math.sin(x * 0.15 + y * 0.08) * 0.25;
-                const intensity = Math.floor(100 + 80 * (wave1 + wave2 + wave3));
+                const wave1 = Math.sin(x * 0.08 + y * 0.04) * 0.2;
+                const wave2 = Math.cos(x * 0.06 + y * 0.10) * 0.15;
+                const wave3 = Math.sin(x * 0.12 + y * 0.06) * 0.18;
+                const intensity = Math.floor(180 + 60 * (wave1 + wave2 + wave3));
 
-                ctx.fillStyle = `rgba(${Math.max(0, intensity - 40)},${intensity},${Math.min(255, intensity + 60)},0.3)`;
+                ctx.fillStyle = `rgba(${Math.max(120, intensity)},${Math.min(255, intensity + 40)},255,0.4)`;
                 ctx.fillRect(x, y, 1, 1);
             }
         }
 
-        // Espuma y remolinos
-        for (let i = 0; i < 60; i++) {
+        // Cristales de hielo y brillos gelidos
+        for (let i = 0; i < 80; i++) {
             const rx = Math.random() * size;
             const ry = Math.random() * size;
-            const rr = Math.random() * 12 + 4;
+            const rr = Math.random() * 8 + 2;
             const grad = ctx.createRadialGradient(rx, ry, 0, rx, ry, rr);
-            grad.addColorStop(0, "rgba(200,240,255,0.4)");
-            grad.addColorStop(0.6, "rgba(100,200,255,0.2)");
-            grad.addColorStop(1, "rgba(100,200,255,0)");
+            grad.addColorStop(0, "rgba(255,255,255,0.7)");
+            grad.addColorStop(0.4, "rgba(220,240,255,0.4)");
+            grad.addColorStop(1, "rgba(180,220,255,0)");
             ctx.beginPath();
             ctx.arc(rx, ry, rr, 0, 2 * Math.PI);
             ctx.fillStyle = grad;
@@ -392,14 +392,14 @@ function init() {
         currentTexture.repeat.set(6, 3);
 
         const currentMat = new THREE.MeshStandardMaterial({
-            color: 0x2e7db8,
+            color: 0xc8f0ff,
             map: currentTexture,
             transparent: true,
-            opacity: 0.9,
-            roughness: 0.1,
-            metalness: 0.8,
-            emissive: 0x1a4d72,
-            emissiveIntensity: 0.3,
+            opacity: 0.85,
+            roughness: 0.05,
+            metalness: 0.9,
+            emissive: 0x88ccff,
+            emissiveIntensity: 0.4,
             side: THREE.DoubleSide
         });
 
@@ -647,7 +647,7 @@ function init() {
 
     // === FORMACIÓN ROCOSA MARINA ===
     function createMarineRock() {
-        // Formación rocosa: estructura irregular submarina
+        // Formación rocosa: estructura muy irregular submarina
         const rockRadius = 7 + Math.random() * 2;
         const rockTheta = Math.random() * Math.PI * 2;
         const rockDist = 20 + Math.random() * 8;
@@ -655,33 +655,57 @@ function init() {
         const rz = Math.sin(rockTheta) * rockDist;
         const ry = 0.3;
 
-        // Geometría irregular para roca marina
-        const widthSegments = 10 + Math.floor(Math.random() * 4);
-        const heightSegments = 8 + Math.floor(Math.random() * 3);
-        const geometry = new THREE.SphereGeometry(rockRadius, widthSegments, heightSegments, 0, Math.PI * 2, 0, Math.PI / 1.4);
+        // Crear geometría base muy irregular
+        const baseGeometry = new THREE.SphereGeometry(rockRadius, 16, 12);
 
-        // Deformar para aspecto rocoso marino
-        for (let i = 0; i < geometry.attributes.position.count; i++) {
-            let x = geometry.attributes.position.getX(i);
-            let y = geometry.attributes.position.getY(i);
-            let z = geometry.attributes.position.getZ(i);
+        // Deformación extrema para base muy irregular
+        for (let i = 0; i < baseGeometry.attributes.position.count; i++) {
+            let x = baseGeometry.attributes.position.getX(i);
+            let y = baseGeometry.attributes.position.getY(i);
+            let z = baseGeometry.attributes.position.getZ(i);
 
-            // Forma rocosa irregular
-            y *= 0.8;
+            // Solo procesar la base (y < 0)
+            if (y <= 0) {
+                const r = Math.sqrt(x * x + z * z);
+                const angle = Math.atan2(z, x);
 
-            // Erosión marina
-            const r = Math.sqrt(x * x + z * z);
-            const angle = Math.atan2(z, x);
-            let erosion = Math.sin(angle * 5 + Math.random() * 0.7) * 0.4;
-            erosion += Math.cos(angle * 3 + r * 0.3) * 0.3;
+                // Deformación radial muy irregular
+                const radialNoise = Math.sin(angle * 7 + Math.random() * 3) * 0.6
+                    + Math.cos(angle * 11 + Math.random() * 2) * 0.4
+                    + Math.sin(angle * 3 + Math.random()) * 0.8;
 
-            // Rugosidad
-            let roughness = (Math.random() - 0.5) * 0.8;
-            y += erosion * 0.8 * (1 - r / rockRadius) + roughness * 0.2 * (1 - r / rockRadius);
+                const radialFactor = 1 + radialNoise * 0.7;
+                x *= radialFactor;
+                z *= radialFactor;
 
-            geometry.attributes.position.setY(i, y);
+                // Ondulaciones verticales asimétricas en la base
+                const verticalNoise = Math.sin(x * 0.3 + z * 0.4) * 0.5
+                    + Math.cos(x * 0.7 - z * 0.3) * 0.3
+                    + (Math.random() - 0.5) * 0.6;
+
+                y += verticalNoise * Math.abs(y) * 0.8;
+
+                // Protuberancias y hendiduras aleatorias
+                if (Math.random() > 0.7) {
+                    const bulge = (Math.random() - 0.5) * 2;
+                    x += Math.cos(angle + Math.random()) * bulge * 0.4;
+                    z += Math.sin(angle + Math.random()) * bulge * 0.4;
+                    y += bulge * 0.3;
+                }
+            } else {
+                // Parte superior menos deformada pero aún irregular
+                y *= 0.6 + Math.random() * 0.3;
+
+                const topNoise = (Math.random() - 0.5) * 0.4;
+                x += topNoise;
+                z += topNoise;
+            }
+
+            baseGeometry.attributes.position.setX(i, x);
+            baseGeometry.attributes.position.setY(i, y);
+            baseGeometry.attributes.position.setZ(i, z);
         }
-        geometry.computeVertexNormals();
+        baseGeometry.computeVertexNormals();
 
         const material = new THREE.MeshStandardMaterial({
             color: 0x4a6b7c,
@@ -693,7 +717,7 @@ function init() {
             emissive: 0x0a1520,
             emissiveIntensity: 0.1
         });
-        const rock = new THREE.Mesh(geometry, material);
+        const rock = new THREE.Mesh(baseGeometry, material);
         rock.position.set(rx, ry, rz);
         rock.receiveShadow = true;
         rock.castShadow = true;
