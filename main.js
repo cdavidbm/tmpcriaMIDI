@@ -16,6 +16,146 @@ let morphTargets = {};
 let morphSliders = []; // Array para almacenar referencias a los sliders de morph
 const channel = new BroadcastChannel('criaturas');
 
+// Sistema de audio para efectos de sonido
+class AudioSystem {
+    constructor() {
+        this.audioContext = null;
+        this.enabled = true;
+        this.masterVolume = 0.3;
+        this.init();
+    }
+
+    init() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Web Audio API no soportada');
+            this.enabled = false;
+        }
+    }
+
+    // Sonido para knobs/sliders (tono variable según valor)
+    playKnobSound(value = 0.5, duration = 0.05) {
+        if (!this.enabled || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        // Frecuencia basada en el valor del knob (200-800 Hz)
+        const frequency = 200 + (value * 600);
+        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+        oscillator.type = 'sine';
+
+        // Filtro paso bajo para suavizar
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, this.audioContext.currentTime);
+        filter.Q.setValueAtTime(1, this.audioContext.currentTime);
+
+        // Envelope ADSR rápido
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(this.masterVolume * 0.1, this.audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration);
+
+        oscillator.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration);
+    }
+
+    // Sonido para botones (click mecánico)
+    playButtonSound() {
+        if (!this.enabled || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        oscillator.frequency.setValueAtTime(150, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.1);
+        oscillator.type = 'square';
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(300, this.audioContext.currentTime);
+
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(this.masterVolume * 0.2, this.audioContext.currentTime + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
+
+        oscillator.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.1);
+    }
+
+    // Sonido para acciones especiales (aprobar criatura, etc.)
+    playActionSound() {
+        if (!this.enabled || !this.audioContext) return;
+
+        const oscillator1 = this.audioContext.createOscillator();
+        const oscillator2 = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator1.frequency.setValueAtTime(440, this.audioContext.currentTime);
+        oscillator1.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.2);
+        oscillator1.type = 'sine';
+
+        oscillator2.frequency.setValueAtTime(660, this.audioContext.currentTime);
+        oscillator2.frequency.exponentialRampToValueAtTime(1320, this.audioContext.currentTime + 0.2);
+        oscillator2.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(this.masterVolume * 0.15, this.audioContext.currentTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
+
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator1.start(this.audioContext.currentTime);
+        oscillator2.start(this.audioContext.currentTime);
+        oscillator1.stop(this.audioContext.currentTime + 0.3);
+        oscillator2.stop(this.audioContext.currentTime + 0.3);
+    }
+
+    // Sonido para wireframe toggle
+    playWireframeSound() {
+        if (!this.enabled || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(400, this.audioContext.currentTime + 0.15);
+        oscillator.type = 'sawtooth';
+
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(this.masterVolume * 0.1, this.audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.15);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.15);
+    }
+
+    setEnabled(enabled) {
+        this.enabled = enabled;
+    }
+
+    setVolume(volume) {
+        this.masterVolume = Math.max(0, Math.min(1, volume));
+    }
+}
+
+// Instancia global del sistema de audio
+const audioSystem = new AudioSystem();
+
 // Configuración básica de la escena y el renderer
 const escenaDiv = document.getElementById('escena');
 const width = escenaDiv.clientWidth;
@@ -149,6 +289,8 @@ loader.load(
                         slider.oninput = () => {
                             morphInfluences[morphDict[name]] = parseFloat(slider.value);
                             slider.style.setProperty('--val', slider.value * 100);
+                            // Sonido para morph sliders
+                            audioSystem.playKnobSound(parseFloat(slider.value));
                         };
 
                         label.appendChild(slider);
@@ -193,6 +335,8 @@ if (colorSlider) {
                 if (mainMesh.material.color) mainMesh.material.color.set(color);
             }
         }
+        // Sonido para slider de color
+        audioSystem.playKnobSound(colorSlider.value / 360);
     });
 }
 
@@ -203,6 +347,8 @@ if (sizeSlider) {
             const scale = sizeSlider.value / 100;
             mainMesh.scale.set(scale, scale, scale);
         }
+        // Sonido para slider de tamaño
+        audioSystem.playKnobSound((sizeSlider.value - 50) / 100);
     });
 }
 
@@ -219,6 +365,8 @@ if (wireframeBtn) {
                     mainMesh.material.wireframe = !mainMesh.material.wireframe;
             }
         }
+        // Sonido para wireframe toggle
+        audioSystem.playWireframeSound();
     });
 }
 
@@ -233,6 +381,8 @@ if (animarBtn) {
                 animationAction.paused = !animationAction.paused;
             }
         }
+        // Sonido para botón de animación
+        audioSystem.playButtonSound();
     });
 }
 
@@ -333,6 +483,8 @@ function handleMIDIMessage(event) {
                 morphSliders[idx].style.setProperty('--val', v * 100);
                 morphSliders[idx].dispatchEvent(new Event('input'));
                 console.log(`Slider ${idx} actualizado a ${v}`);
+                // Sonido para control MIDI de morph targets
+                audioSystem.playKnobSound(v, 0.03);
             } else {
                 console.warn(`No se encontró slider en índice ${idx}`);
             }
@@ -345,6 +497,7 @@ function handleMIDIMessage(event) {
                 colorSlider.value = v;
                 colorSlider.dispatchEvent(new Event('input'));
                 console.log(`Color actualizado a ${v}`);
+                // Sonido ya incluido en el evento 'input' del slider
             }
         }
         // Tamaño: CC 61 (0-127 -> 50-150)
@@ -355,6 +508,7 @@ function handleMIDIMessage(event) {
                 sizeSlider.value = v;
                 sizeSlider.dispatchEvent(new Event('input'));
                 console.log(`Tamaño actualizado a ${v}`);
+                // Sonido ya incluido en el evento 'input' del slider
             }
         }
     }
@@ -368,6 +522,7 @@ function handleMIDIMessage(event) {
         }
         if (note === 1) {
             window.girarFiguraY();
+            audioSystem.playButtonSound();
         }
         if (note === 4) {
             window.toggleWireframe();
@@ -383,9 +538,15 @@ window.addEventListener('keydown', function (e) {
     }
     if (e.key === 'a' || e.key === 'A') {
         window.girarFiguraY();
+        audioSystem.playButtonSound();
     }
     if (e.key === 'w' || e.key === 'W') {
         window.toggleWireframe();
+    }
+    // Toggle de sonido con 'S'
+    if (e.key === 's' || e.key === 'S') {
+        audioSystem.setEnabled(!audioSystem.enabled);
+        console.log('Sonidos:', audioSystem.enabled ? 'activados' : 'desactivados');
     }
 });
 
@@ -432,6 +593,9 @@ window.resetAll = function () {
             mainMesh.material.wireframe = false;
         }
     }
+
+    // Sonido para reset
+    audioSystem.playButtonSound();
 };
 
 window.toggleWireframe = function () {
@@ -445,6 +609,8 @@ window.toggleWireframe = function () {
             mainMesh.material.wireframe = wireframeMode;
         }
     }
+    // Sonido para wireframe toggle
+    audioSystem.playWireframeSound();
 };
 
 window.aprobarCriatura = function () {
@@ -481,6 +647,9 @@ window.aprobarCriatura = function () {
         type: 'nueva_criatura',
         data: nuevaCriatura
     });
+
+    // Sonido para aprobar criatura
+    audioSystem.playActionSound();
 
     // Resetear la criatura actual
     resetAll();
