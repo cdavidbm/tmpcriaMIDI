@@ -338,7 +338,7 @@ function handleMIDIMessage(event) {
             }
         }
         // Color: CC 57 (0-127 -> 0-360)
-        if (cc === 57) {
+        if (cc === 19) {
             const colorSlider = document.getElementById('color');
             if (colorSlider) {
                 const v = Math.round((value / 127) * 360);
@@ -348,7 +348,7 @@ function handleMIDIMessage(event) {
             }
         }
         // Tamaño: CC 61 (0-127 -> 50-150)
-        if (cc === 61) {
+        if (cc === 23) {
             const sizeSlider = document.getElementById('size');
             if (sizeSlider) {
                 const v = Math.round(50 + (value / 127) * 100);
@@ -363,13 +363,13 @@ function handleMIDIMessage(event) {
         const note = cc; // En Note On, el segundo byte es la nota
         console.log(`Nota MIDI: ${note}`);
 
-        if (note === 27) {
+        if (note === 3 || note === 6) {
             window.aprobarCriatura();
         }
-        if (note === 25) {
+        if (note === 1) {
             window.girarFiguraY();
         }
-        if (note === 26) {
+        if (note === 4) {
             window.toggleWireframe();
         }
     }

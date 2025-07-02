@@ -1,7 +1,7 @@
 # Tareas para el miercoles:
 - Quitar isla y poner de fondo un hidra o un video
-- Remapear controlador MIDI
-- Renombrar criaturas en latin  [X]
+- Remapear controlador MIDI [X]
+- Renombrar criaturas en latin [X]
 - Poner sonido
 - ** Integrar criaturas de Juli
 - ** Reemplazar localStorage por DB multi sesión
