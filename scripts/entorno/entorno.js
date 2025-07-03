@@ -887,7 +887,7 @@ async function cargarCriaturas() {
     for (const criatura of criaturasGuardadas) {
         try {
             // CAMBIO: usa la misma ruta que in main.js
-            const gltf = await loader.loadAsync('modelo.glb');
+            const gltf = await loader.loadAsync('/assets/modelo.glb');
             const modelo = gltf.scene.clone();
 
             // Aplicar los morph targets guardados y mejorar materiales
@@ -995,7 +995,7 @@ async function cargarNuevaCriatura(criatura) {
     const loader = new GLTFLoader();
     try {
         // CAMBIO: usa la misma ruta que in main.js
-        const gltf = await loader.loadAsync('modelo.glb');
+        const gltf = await loader.loadAsync('/assets/modelo.glb');
         const modelo = gltf.scene.clone();
 
         // Aplicar los morph targets y mejorar materiales

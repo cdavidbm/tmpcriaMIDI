@@ -207,7 +207,7 @@ controls.update();
 // Carga del modelo GLB usando GLTFLoader
 const loader = new GLTFLoader();
 loader.load(
-    'modelo.glb',
+    '/assets/modelo.glb',
     function (gltf) {
         scene.add(gltf.scene); // Agrega el modelo a la escena
         mainModel = gltf.scene; // Guarda referencia al grupo raíz
