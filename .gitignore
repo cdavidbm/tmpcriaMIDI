@@ -22,6 +22,7 @@ pnpm-debug.log*
 
 # Sistema operativo
 Thumbs.db
+CLAUDE.md
 
 # Lock files (opcional, puedes incluir package-lock.json si trabajas en equipo)
 # package-lock.json
