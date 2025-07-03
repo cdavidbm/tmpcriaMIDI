@@ -22,7 +22,6 @@ pnpm-debug.log*
 
 # Sistema operativo
 Thumbs.db
-CLAUDE.md
 
 # Lock files (opcional, puedes incluir package-lock.json si trabajas en equipo)
 # package-lock.json
@@ -30,3 +29,9 @@ CLAUDE.md
 # Archivos temporales
 *.tmp
 *.temp
+
+# Otros
+CLAUDE.md
+_primeraVersion/
+_models_origin/
+_utils/
